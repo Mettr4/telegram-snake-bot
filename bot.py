@@ -71,5 +71,6 @@ async def setup():
 
 
 if __name__ == "__main__":
-    print("🌐 Веб-сервер запущен на http://0.0.0.0:8080")
-    app.run(host='0.0.0.0', port=8080, debug=False, use_reloader=False)
+    port = int(os.getenv('PORT', 8080))
+    print(f"🌐 Веб-сервер запущен на http://0.0.0.0:{port}")
+    app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)
