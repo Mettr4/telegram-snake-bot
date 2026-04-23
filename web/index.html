@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐍 Snake Game</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🐍 Snake Game</h1>
+        <div class="game-wrapper">
+            <canvas id="gameCanvas" width="320" height="320"></canvas>
+            <div class="info">
+                <div class="score">Score: <span id="score">0</span></div>
+                <div class="controls-info">
+                    <p>⬆️ ⬇️ ⬅️ ➡️ или свайп</p>
+                </div>
+            </div>
+        </div>
+        <div class="buttons">
+            <button id="startBtn" class="btn btn-primary">▶️ Начать игру</button>
+            <button id="pauseBtn" class="btn btn-secondary" disabled>⏸️ Пауза</button>
+            <button id="restartBtn" class="btn btn-warning">🔄 Новая игра</button>
+        </div>
+        <div id="gameOver" class="game-over" style="display: none;">
+            <h2>💀 Игра окончена!</h2>
+            <p>Ваш счёт: <span id="finalScore">0</span></p>
+            <button class="btn btn-primary" onclick="location.reload()">🔄 Играть снова</button>
+        </div>
+    </div>
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="game.js"></script>
+    <script src="renderer.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

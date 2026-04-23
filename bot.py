@@ -1,106 +1,68 @@
 import os
-import asyncio
+import threading
 from dotenv import load_dotenv
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
-from game import SnakeGame, Direction
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
+from telegram.ext import Application, CommandHandler, ContextTypes
+from flask import Flask, send_from_directory
 
 load_dotenv()
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+WEB_APP_URL = os.getenv("WEB_APP_URL", "http://localhost:8080")
 
-games = {}
+# Flask app for serving web game
+flask_app = Flask(__name__)
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+WEB_DIR = os.path.join(SCRIPT_DIR, 'web')
+
+
+@flask_app.route('/')
+def index():
+    return send_from_directory(WEB_DIR, 'index.html')
+
+
+@flask_app.route('/<path:path>')
+def serve_static(path):
+    return send_from_directory(WEB_DIR, path)
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    games[user_id] = SnakeGame()
-
     keyboard = [
-        [InlineKeyboardButton("⬆️", callback_data="up")],
-        [InlineKeyboardButton("⬅️", callback_data="left"),
-         InlineKeyboardButton("⬇️", callback_data="down"),
-         InlineKeyboardButton("➡️", callback_data="right")],
-        [InlineKeyboardButton("🔄 Новая игра", callback_data="restart")],
+        [InlineKeyboardButton("🎮 Играть в приложении", web_app=WebAppInfo(url=WEB_APP_URL))],
+        [InlineKeyboardButton("📖 Правила", callback_data="rules")],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    message = await update.message.reply_text(
-        "🐍 Игра Змейка!\n\n" + games[user_id].render(),
+    await update.message.reply_text(
+        "🐍 Добро пожаловать в Snake Game!\n\n"
+        "Нажми на кнопку ниже чтобы начать играть в полноценное приложение с пиксель-артом!\n\n"
+        "Управление:\n"
+        "⬆️⬇️⬅️➡️ - Стрелки или свайп на экране\n"
+        "Ешь яблоки и избегай столкновений!",
         reply_markup=reply_markup
     )
-    context.user_data['game_message_id'] = message.message_id
-    context.user_data['game_task'] = asyncio.create_task(game_loop(user_id, update, context))
 
 
-async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    user_id = query.from_user.id
-
-    if user_id not in games:
-        await query.answer("Сначала начните игру с /start")
-        return
-
-    game = games[user_id]
-
-    if query.data == "up":
-        game.set_direction(Direction.UP)
-    elif query.data == "down":
-        game.set_direction(Direction.DOWN)
-    elif query.data == "left":
-        game.set_direction(Direction.LEFT)
-    elif query.data == "right":
-        game.set_direction(Direction.RIGHT)
-    elif query.data == "restart":
-        game.reset()
-
-    await query.answer()
+def run_flask():
+    flask_app.run(host='0.0.0.0', port=8080, debug=False, use_reloader=False)
 
 
-async def game_loop(user_id: int, update: Update, context: ContextTypes.DEFAULT_TYPE):
-    try:
-        while True:
-            if user_id not in games:
-                break
+def run_telegram_bot():
+    app = Application.builder().token(TOKEN).build()
+    app.add_handler(CommandHandler("start", start))
 
-            game = games[user_id]
-            game.update()
-
-            keyboard = [
-                [InlineKeyboardButton("⬆️", callback_data="up")],
-                [InlineKeyboardButton("⬅️", callback_data="left"),
-                 InlineKeyboardButton("⬇️", callback_data="down"),
-                 InlineKeyboardButton("➡️", callback_data="right")],
-                [InlineKeyboardButton("🔄 Новая игра", callback_data="restart")],
-            ]
-            reply_markup = InlineKeyboardMarkup(keyboard)
-
-            text = game.render()
-            if game.game_over:
-                text += "\n\n💀 Игра окончена! Нажми 🔄 для новой игры"
-
-            try:
-                await context.bot.edit_message_text(
-                    chat_id=update.effective_chat.id,
-                    message_id=context.user_data.get('game_message_id'),
-                    text=text,
-                    reply_markup=reply_markup
-                )
-            except:
-                pass
-
-            await asyncio.sleep(0.5)
-    except asyncio.CancelledError:
-        pass
+    print("🤖 Telegram бот запущен...")
+    app.run_polling()
 
 
 def main():
-    app = Application.builder().token(TOKEN).build()
+    # Start Flask in background thread
+    flask_thread = threading.Thread(target=run_flask, daemon=True)
+    flask_thread.start()
 
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(CallbackQueryHandler(button))
+    print("🌐 Веб-сервер запущен на http://0.0.0.0:8080")
 
-    print("🤖 Бот запущен...")
-    app.run_polling()
+    # Run Telegram bot in main thread
+    run_telegram_bot()
 
 
 if __name__ == "__main__":
