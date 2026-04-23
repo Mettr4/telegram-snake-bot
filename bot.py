@@ -16,6 +16,12 @@ app = Flask(__name__, static_folder=WEB_DIR, static_url_path='/')
 print("[BOT] Flask app created")
 
 
+@app.route('/health')
+def health():
+    print("[ROUTE] GET /health")
+    return "OK", 200
+
+
 @app.route('/')
 def index():
     print("[ROUTE] GET /")
