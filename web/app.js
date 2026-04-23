@@ -33,26 +33,57 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// Touch input
-let touchStartX = 0, touchStartY = 0;
-document.addEventListener('touchstart', (e) => {
-    touchStartX = e.touches[0].clientX;
-    touchStartY = e.touches[0].clientY;
-});
+// Drag/Touch input
+let dragStartX = 0, dragStartY = 0, isDragging = false;
 
-document.addEventListener('touchend', (e) => {
-    if (!gameRunning) return;
-    const dx = e.changedTouches[0].clientX - touchStartX;
-    const dy = e.changedTouches[0].clientY - touchStartY;
+function handleDrag(e) {
+    if (!gameRunning || !isDragging) return;
+
+    const currentX = e.touches ? e.touches[0].clientX : e.clientX;
+    const currentY = e.touches ? e.touches[0].clientY : e.clientY;
+    const dx = currentX - dragStartX;
+    const dy = currentY - dragStartY;
 
     let dir = null;
     if (Math.abs(dx) > Math.abs(dy)) {
-        dir = dx > touchThreshold ? Direction.RIGHT : dx < -touchThreshold ? Direction.LEFT : null;
+        dir = dx > 5 ? Direction.RIGHT : dx < -5 ? Direction.LEFT : null;
     } else {
-        dir = dy > touchThreshold ? Direction.DOWN : dy < -touchThreshold ? Direction.UP : null;
+        dir = dy > 5 ? Direction.DOWN : dy < -5 ? Direction.UP : null;
     }
 
-    if (dir && inputBuffer.length < 2) inputBuffer.push(dir);
+    if (dir && inputBuffer.length < 2) {
+        inputBuffer.push(dir);
+        dragStartX = currentX;
+        dragStartY = currentY;
+    }
+}
+
+// Mouse drag
+document.addEventListener('mousedown', (e) => {
+    if (!gameRunning) return;
+    isDragging = true;
+    dragStartX = e.clientX;
+    dragStartY = e.clientY;
+});
+
+document.addEventListener('mousemove', handleDrag);
+
+document.addEventListener('mouseup', () => {
+    isDragging = false;
+});
+
+// Touch drag
+document.addEventListener('touchstart', (e) => {
+    if (!gameRunning) return;
+    isDragging = true;
+    dragStartX = e.touches[0].clientX;
+    dragStartY = e.touches[0].clientY;
+});
+
+document.addEventListener('touchmove', handleDrag, { passive: true });
+
+document.addEventListener('touchend', () => {
+    isDragging = false;
 });
 
 // Gamepad input
