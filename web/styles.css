@@ -73,6 +73,119 @@ h1 {
     margin-bottom: 20px;
 }
 
+.difficulty-panel {
+    background: #111;
+    padding: 15px;
+    border-radius: 5px;
+    margin-top: 15px;
+}
+
+.difficulty-panel h3 {
+    color: #ff6600;
+    margin-bottom: 10px;
+    font-size: 1em;
+}
+
+.difficulty-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.difficulty-btn {
+    padding: 8px 12px;
+    background: transparent;
+    color: #888;
+    border: 2px solid #444;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9em;
+}
+
+.difficulty-btn:hover {
+    border-color: #ff6600;
+    color: #ff6600;
+}
+
+.difficulty-btn.active {
+    background: #ff6600;
+    color: #fff;
+    border-color: #ff6600;
+}
+
+.settings-panel {
+    background: #111;
+    padding: 15px;
+    border-radius: 5px;
+    margin-top: 15px;
+}
+
+.settings-panel h3 {
+    color: #00ff00;
+    margin-bottom: 10px;
+    font-size: 1em;
+}
+
+.sensitivity-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.sensitivity-btn {
+    padding: 8px 12px;
+    background: transparent;
+    color: #888;
+    border: 2px solid #444;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9em;
+}
+
+.sensitivity-btn:hover {
+    border-color: #00ff00;
+    color: #00ff00;
+}
+
+.sensitivity-btn.active {
+    background: #00ff00;
+    color: #000;
+    border-color: #00ff00;
+}
+
+.theme-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.theme-btn {
+    padding: 8px 12px;
+    background: transparent;
+    color: #888;
+    border: 2px solid #444;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9em;
+}
+
+.theme-btn:hover {
+    border-color: #00ff00;
+    color: #00ff00;
+}
+
+.theme-btn.active {
+    background: #00ff00;
+    color: #000;
+    border-color: #00ff00;
+}
+
 .btn {
     padding: 10px 20px;
     border: 2px solid #00ff00;

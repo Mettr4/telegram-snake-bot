@@ -12,18 +12,57 @@ class Direction {
 class SnakeGame {
     static GRID_WIDTH = 10;
     static GRID_HEIGHT = 10;
+    static DIFFICULTY = {
+        easy: 600,
+        normal: 500,
+        hard: 350
+    };
 
-    constructor() {
+    constructor(difficulty = 'normal') {
+        this.difficulty = difficulty;
+        this.updateInterval = SnakeGame.DIFFICULTY[difficulty];
+        this.foodEaten = false;
+        this.collisionOccurred = false;
         this.reset();
     }
 
     reset() {
         this.snake = [{ x: 5, y: 5 }];
         this.food = this.spawnFood();
+        this.specialFood = null;
         this.direction = Direction.RIGHT;
         this.nextDirection = Direction.RIGHT;
         this.score = 0;
         this.gameOver = false;
+        this.obstacles = [];
+        this.slowCounter = 0;
+        this.foodEaten = false;
+        this.collisionOccurred = false;
+
+        if (this.difficulty === 'hard') {
+            this.generateObstacles();
+        }
+    }
+
+    generateObstacles() {
+        this.obstacles = [];
+        const obstacleCount = 8;
+        for (let i = 0; i < obstacleCount; i++) {
+            let newObstacle;
+            do {
+                newObstacle = {
+                    x: Math.floor(Math.random() * SnakeGame.GRID_WIDTH),
+                    y: Math.floor(Math.random() * SnakeGame.GRID_HEIGHT)
+                };
+            } while (this.isSnakePosition(newObstacle) ||
+                     (newObstacle.x === this.food.x && newObstacle.y === this.food.y) ||
+                     this.isObstaclePosition(newObstacle));
+            this.obstacles.push(newObstacle);
+        }
+    }
+
+    isObstaclePosition(pos) {
+        return this.obstacles.some(obs => obs.x === pos.x && obs.y === pos.y);
     }
 
     spawnFood() {
@@ -31,9 +70,10 @@ class SnakeGame {
         do {
             newFood = {
                 x: Math.floor(Math.random() * SnakeGame.GRID_WIDTH),
-                y: Math.floor(Math.random() * SnakeGame.GRID_HEIGHT)
+                y: Math.floor(Math.random() * SnakeGame.GRID_HEIGHT),
+                special: Math.random() < 0.1
             };
-        } while (this.isSnakePosition(newFood));
+        } while (this.isSnakePosition(newFood) || this.isObstaclePosition(newFood));
         return newFood;
     }
 
@@ -48,7 +88,15 @@ class SnakeGame {
     }
 
     update() {
+        this.foodEaten = false;
+        this.collisionOccurred = false;
+
         if (this.gameOver) return;
+
+        if (this.slowCounter > 0) {
+            this.slowCounter--;
+            return;
+        }
 
         this.direction = this.nextDirection;
         const head = this.snake[0];
@@ -61,12 +109,21 @@ class SnakeGame {
         if (newHead.x < 0 || newHead.x >= SnakeGame.GRID_WIDTH ||
             newHead.y < 0 || newHead.y >= SnakeGame.GRID_HEIGHT) {
             this.gameOver = true;
+            this.collisionOccurred = true;
             return;
         }
 
         // Check self collision
         if (this.isSnakePosition(newHead)) {
             this.gameOver = true;
+            this.collisionOccurred = true;
+            return;
+        }
+
+        // Check obstacle collision
+        if (this.isObstaclePosition(newHead)) {
+            this.gameOver = true;
+            this.collisionOccurred = true;
             return;
         }
 
@@ -74,7 +131,19 @@ class SnakeGame {
 
         // Check food collision
         if (newHead.x === this.food.x && newHead.y === this.food.y) {
-            this.score += 10;
+            this.foodEaten = true;
+            if (this.food.special) {
+                this.score += 50;
+                this.slowCounter = 2;
+            } else {
+                this.score += 10;
+            }
+
+            let scoreIncrease = Math.floor(this.score / 10 / 10);
+            if (scoreIncrease > 0 && this.difficulty !== 'hard') {
+                this.updateInterval = Math.max(200, SnakeGame.DIFFICULTY[this.difficulty] - (scoreIncrease * 20));
+            }
+
             this.food = this.spawnFood();
         } else {
             this.snake.pop();
@@ -86,7 +155,9 @@ class SnakeGame {
             snake: this.snake,
             food: this.food,
             score: this.score,
-            gameOver: this.gameOver
+            gameOver: this.gameOver,
+            obstacles: this.obstacles,
+            difficulty: this.difficulty
         };
     }
 }

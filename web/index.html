@@ -23,6 +23,29 @@
             <button id="pauseBtn" class="btn btn-secondary" disabled>⏸️ Пауза</button>
             <button id="restartBtn" class="btn btn-warning">🔄 Новая игра</button>
         </div>
+        <div class="difficulty-panel">
+            <h3>⚡ Уровень сложности</h3>
+            <div class="difficulty-buttons">
+                <button class="difficulty-btn" data-difficulty="easy">😌 Легко</button>
+                <button class="difficulty-btn active" data-difficulty="normal">🎮 Нормально</button>
+                <button class="difficulty-btn" data-difficulty="hard">💀 Сложно</button>
+            </div>
+        </div>
+        <div class="settings-panel">
+            <h3>⚙️ Чувствительность сенсора</h3>
+            <div class="sensitivity-buttons">
+                <button class="sensitivity-btn" data-sensitivity="20">Высокая (20px)</button>
+                <button class="sensitivity-btn active" data-sensitivity="30">Нормально (30px)</button>
+                <button class="sensitivity-btn" data-sensitivity="50">Низкая (50px)</button>
+            </div>
+            <h3 style="margin-top: 15px;">🎨 Тема</h3>
+            <div class="theme-buttons">
+                <button class="theme-btn" data-theme="classic">Классик</button>
+                <button class="theme-btn" data-theme="neon">Неон</button>
+                <button class="theme-btn" data-theme="retro">Ретро</button>
+                <button class="theme-btn" data-theme="dark">Тёмный</button>
+            </div>
+        </div>
         <div id="gameOver" class="game-over" style="display: none;">
             <h2>💀 Игра окончена!</h2>
             <p>Ваш счёт: <span id="finalScore">0</span></p>

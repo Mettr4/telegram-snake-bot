@@ -1,22 +1,105 @@
+class Particle {
+    constructor(x, y, vx, vy, color, life = 30) {
+        this.x = x;
+        this.y = y;
+        this.vx = vx;
+        this.vy = vy;
+        this.color = color;
+        this.life = life;
+        this.maxLife = life;
+    }
+
+    update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vy += 0.2;
+        this.life--;
+    }
+
+    draw(ctx) {
+        const alpha = this.life / this.maxLife;
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.x, this.y, 4, 4);
+        ctx.globalAlpha = 1;
+    }
+}
+
+class ParticleSystem {
+    constructor() {
+        this.particles = [];
+    }
+
+    emit(x, y, count, color) {
+        for (let i = 0; i < count; i++) {
+            const angle = (Math.PI * 2 * i) / count;
+            const speed = 2 + Math.random() * 2;
+            const vx = Math.cos(angle) * speed;
+            const vy = Math.sin(angle) * speed;
+            this.particles.push(new Particle(x, y, vx, vy, color));
+        }
+    }
+
+    update() {
+        this.particles = this.particles.filter(p => {
+            p.update();
+            return p.life > 0;
+        });
+    }
+
+    draw(ctx) {
+        this.particles.forEach(p => p.draw(ctx));
+    }
+}
+
 class GameRenderer {
     constructor(canvasId, cellSize = 32) {
         this.canvas = document.getElementById(canvasId);
         this.ctx = this.canvas.getContext('2d');
         this.cellSize = cellSize;
+        this.particleSystem = new ParticleSystem();
+        this.themes = {
+            classic: { bg: '#000000', head: '#00ff00', body: '#00cc00', food: '#ff0000', obstacle: '#444444' },
+            neon: { bg: '#0a0a0a', head: '#00ffff', body: '#00aa88', food: '#ff00ff', obstacle: '#666666' },
+            retro: { bg: '#1a1a2e', head: '#38ff46', body: '#11ff41', food: '#ff6b35', obstacle: '#555555' },
+            dark: { bg: '#0d0221', head: '#3a86ff', body: '#1b4965', food: '#ff006e', obstacle: '#333333' }
+        };
+        this.currentTheme = localStorage.getItem('theme') || 'classic';
+        this.shakeIntensity = 0;
         this.setupCanvas();
     }
 
     setupCanvas() {
-        // Disable image smoothing for pixelated look
         this.ctx.imageSmoothingEnabled = false;
         this.ctx.webkitImageSmoothingEnabled = false;
         this.ctx.msImageSmoothingEnabled = false;
     }
 
+    setTheme(themeName) {
+        if (this.themes[themeName]) {
+            this.currentTheme = themeName;
+            localStorage.setItem('theme', themeName);
+        }
+    }
+
+    shake(intensity = 3) {
+        this.shakeIntensity = intensity;
+    }
+
     clear() {
-        this.ctx.fillStyle = '#000000';
+        const theme = this.themes[this.currentTheme];
+        this.ctx.fillStyle = theme.bg;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         this.drawGrid();
+    }
+
+    applyShake() {
+        if (this.shakeIntensity > 0) {
+            const offsetX = (Math.random() - 0.5) * this.shakeIntensity;
+            const offsetY = (Math.random() - 0.5) * this.shakeIntensity;
+            this.ctx.translate(offsetX, offsetY);
+            this.shakeIntensity *= 0.85;
+        }
     }
 
     drawGrid() {
@@ -41,25 +124,56 @@ class GameRenderer {
     }
 
     drawSnake(snake) {
-        // Draw body
+        const theme = this.themes[this.currentTheme];
         for (let i = 1; i < snake.length; i++) {
-            this.drawCell(snake[i], '#00cc00');
+            this.drawCell(snake[i], theme.body);
         }
 
-        // Draw head with glow
         if (snake.length > 0) {
-            this.drawCellWithGlow(snake[0], '#00ff00');
+            this.drawCellWithGlow(snake[0], theme.head);
         }
     }
 
     drawFood(food) {
-        this.drawCell(food, '#ff0000');
-        // Add darker border
-        const x = food.x * this.cellSize;
-        const y = food.y * this.cellSize;
-        this.ctx.strokeStyle = '#cc0000';
-        this.ctx.lineWidth = 2;
-        this.ctx.strokeRect(x + 2, y + 2, this.cellSize - 4, this.cellSize - 4);
+        const theme = this.themes[this.currentTheme];
+        if (food.special) {
+            this.drawCell(food, '#FFD700');
+            const x = food.x * this.cellSize;
+            const y = food.y * this.cellSize;
+            this.ctx.strokeStyle = '#FFA500';
+            this.ctx.lineWidth = 2;
+            this.ctx.strokeRect(x + 2, y + 2, this.cellSize - 4, this.cellSize - 4);
+        } else {
+            this.drawCell(food, theme.food);
+            const x = food.x * this.cellSize;
+            const y = food.y * this.cellSize;
+            const borderColor = this.darken(theme.food);
+            this.ctx.strokeStyle = borderColor;
+            this.ctx.lineWidth = 2;
+            this.ctx.strokeRect(x + 2, y + 2, this.cellSize - 4, this.cellSize - 4);
+        }
+    }
+
+    darken(color) {
+        const num = parseInt(color.replace('#', ''), 16);
+        const amt = 30;
+        const usign = amt > 0 ? 1 : -1;
+        return '#' + (0x1000000 + (Math.floor(num / 0x10000) - usign * amt) * 0x10000 +
+            (Math.floor((num / 0x100) % 0x100) - usign * amt) * 0x100 +
+            (num % 0x100 - usign * amt)).toString(16).slice(1);
+    }
+
+    drawObstacles(obstacles) {
+        const theme = this.themes[this.currentTheme];
+        for (let obstacle of obstacles) {
+            const x = obstacle.x * this.cellSize;
+            const y = obstacle.y * this.cellSize;
+            this.ctx.fillStyle = theme.obstacle;
+            this.ctx.fillRect(x + 1, y + 1, this.cellSize - 2, this.cellSize - 2);
+            this.ctx.strokeStyle = '#666666';
+            this.ctx.lineWidth = 1;
+            this.ctx.strokeRect(x + 1, y + 1, this.cellSize - 2, this.cellSize - 2);
+        }
     }
 
     drawCell(pos, color) {
@@ -82,8 +196,18 @@ class GameRenderer {
     }
 
     render(gameState) {
+        this.applyShake();
         this.clear();
+        this.particleSystem.update();
+
+        if (gameState.obstacles && gameState.obstacles.length > 0) {
+            this.drawObstacles(gameState.obstacles);
+        }
+
         this.drawSnake(gameState.snake);
         this.drawFood(gameState.food);
+        this.particleSystem.draw(this.ctx);
+
+        this.ctx.translate(0, 0);
     }
 }
