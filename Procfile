@@ -1,1 +1,1 @@
-web: gunicorn bot:app --bind 0.0.0.0:$PORT --workers 1
+web: waitress-serve --port=$PORT bot:app
