@@ -178,6 +178,7 @@ function restartGame() {
     pauseBtn.textContent = '⏸️ Пауза';
     gameOverModal.style.display = 'none';
     if (difficultyPanel) difficultyPanel.style.display = 'block';
+    if (joystickElement) joystickElement.classList.remove('active');
     scoreDisplay.textContent = '0';
     renderer.render(game.getState());
 }
