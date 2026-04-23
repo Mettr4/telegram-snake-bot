@@ -1,28 +1,32 @@
 import os
 from flask import Flask, send_file
-from dotenv import load_dotenv
-
-load_dotenv()
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 WEB_DIR = os.path.join(SCRIPT_DIR, 'web')
 
-app = Flask(__name__, static_folder=WEB_DIR, static_url_path='/')
+app = Flask(__name__)
 
 
-@app.route('/')
-def index():
-    return send_file(os.path.join(WEB_DIR, 'index.html'))
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def catch_all(path):
+    # Если path пуст - это запрос к корню
+    if path == '' or path == '/':
+        filepath = os.path.join(WEB_DIR, 'index.html')
+    else:
+        filepath = os.path.join(WEB_DIR, path)
 
-
-@app.route('/<path:filename>')
-def serve_file(filename):
-    filepath = os.path.join(WEB_DIR, filename)
+    # Проверяем существует ли файл
     if os.path.exists(filepath):
-        return send_file(filepath)
-    return "404", 404
+        try:
+            return send_file(filepath)
+        except Exception as e:
+            return f"Error sending file: {e}", 500
 
+    # Если это запрос к папке - попробуем загрузить index.html
+    if os.path.isdir(filepath):
+        index_path = os.path.join(filepath, 'index.html')
+        if os.path.exists(index_path):
+            return send_file(index_path)
 
-if __name__ == '__main__':
-    port = int(os.getenv('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=False)
+    return f"Not found: {filepath}", 404
