@@ -1,18 +1,21 @@
 import os
+import sys
 from flask import Flask
 from dotenv import load_dotenv
 
+print("[BOT] Loading environment...", file=sys.stderr)
 load_dotenv()
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 WEB_APP_URL = os.getenv("WEB_APP_URL", "http://localhost:8080")
 
+print("[BOT] Creating Flask app...", file=sys.stderr)
 app = Flask(__name__)
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 WEB_DIR = os.path.join(SCRIPT_DIR, 'web')
 
-print("[OK] Flask app created")
-print(f"[OK] WEB_DIR: {WEB_DIR}")
-print(f"[OK] WEB_DIR exists: {os.path.exists(WEB_DIR)}")
+print(f"[BOT] Flask app created", file=sys.stderr)
+print(f"[BOT] WEB_DIR: {WEB_DIR}", file=sys.stderr)
+print(f"[BOT] WEB_DIR exists: {os.path.exists(WEB_DIR)}", file=sys.stderr)
 
 
 @app.route('/', methods=['GET'])
