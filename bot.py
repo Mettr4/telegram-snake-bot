@@ -6,21 +6,20 @@ WEB_DIR = os.path.join(os.path.dirname(__file__), 'web')
 
 @app.route('/')
 def index():
-    filepath = os.path.join(WEB_DIR, 'index.html')
-    if os.path.exists(filepath):
-        with open(filepath, 'r') as f:
+    try:
+        with open(os.path.join(WEB_DIR, 'index.html')) as f:
             return f.read()
-    return "index.html not found", 404
+    except:
+        return "404", 404
 
 @app.route('/<path:path>')
 def serve(path):
-    filepath = os.path.join(WEB_DIR, path)
-    if os.path.exists(filepath) and os.path.isfile(filepath):
-        with open(filepath, 'rb') as f:
+    try:
+        with open(os.path.join(WEB_DIR, path), 'rb') as f:
             return f.read()
-    return "404", 404
+    except:
+        return "404", 404
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))
-    print(f'Starting on port {port}')
-    app.run(host='0.0.0.0', port=port, debug=False, threaded=True)
+    app.run(host='0.0.0.0', port=port)
