@@ -28,8 +28,6 @@ class SnakeGame {
 
     reset() {
         this.snake = [{ x: 5, y: 5 }];
-        this.food = this.spawnFood();
-        this.specialFood = null;
         this.direction = Direction.RIGHT;
         this.nextDirection = Direction.RIGHT;
         this.score = 0;
@@ -42,6 +40,7 @@ class SnakeGame {
         if (this.difficulty === 'hard') {
             this.generateObstacles();
         }
+        this.food = this.spawnFood();
     }
 
     generateObstacles() {
@@ -91,63 +90,46 @@ class SnakeGame {
         this.foodEaten = false;
         this.collisionOccurred = false;
 
-        if (this.gameOver) return;
-
-        if (this.slowCounter > 0) {
-            this.slowCounter--;
+        if (this.gameOver || this.slowCounter > 0) {
+            if (this.slowCounter > 0) this.slowCounter--;
             return;
         }
 
         this.direction = this.nextDirection;
-        const head = this.snake[0];
         const newHead = {
-            x: head.x + this.direction.x,
-            y: head.y + this.direction.y
+            x: this.snake[0].x + this.direction.x,
+            y: this.snake[0].y + this.direction.y
         };
 
-        // Check wall collision
-        if (newHead.x < 0 || newHead.x >= SnakeGame.GRID_WIDTH ||
-            newHead.y < 0 || newHead.y >= SnakeGame.GRID_HEIGHT) {
-            this.gameOver = true;
+        if (this.checkCollision(newHead)) {
             this.collisionOccurred = true;
-            return;
-        }
-
-        // Check self collision
-        if (this.isSnakePosition(newHead)) {
             this.gameOver = true;
-            this.collisionOccurred = true;
-            return;
-        }
-
-        // Check obstacle collision
-        if (this.isObstaclePosition(newHead)) {
-            this.gameOver = true;
-            this.collisionOccurred = true;
             return;
         }
 
         this.snake.unshift(newHead);
 
-        // Check food collision
         if (newHead.x === this.food.x && newHead.y === this.food.y) {
             this.foodEaten = true;
-            if (this.food.special) {
-                this.score += 50;
-                this.slowCounter = 2;
-            } else {
-                this.score += 10;
-            }
+            this.score += this.food.special ? 50 : 10;
+            if (this.food.special) this.slowCounter = 2;
 
-            let scoreIncrease = Math.floor(this.score / 10 / 10);
-            if (scoreIncrease > 0 && this.difficulty !== 'hard') {
-                this.updateInterval = Math.max(200, SnakeGame.DIFFICULTY[this.difficulty] - (scoreIncrease * 20));
+            const speedLevel = Math.floor(this.score / 100);
+            if (speedLevel > 0 && this.difficulty !== 'hard') {
+                this.updateInterval = Math.max(200, SnakeGame.DIFFICULTY[this.difficulty] - (speedLevel * 20));
             }
 
             this.food = this.spawnFood();
         } else {
             this.snake.pop();
         }
+    }
+
+    checkCollision(pos) {
+        return pos.x < 0 || pos.x >= SnakeGame.GRID_WIDTH ||
+               pos.y < 0 || pos.y >= SnakeGame.GRID_HEIGHT ||
+               this.isSnakePosition(pos) ||
+               this.isObstaclePosition(pos);
     }
 
     getState() {

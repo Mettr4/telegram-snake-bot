@@ -105,22 +105,17 @@ class GameRenderer {
     drawGrid() {
         this.ctx.strokeStyle = '#111111';
         this.ctx.lineWidth = 0.5;
+        this.ctx.beginPath();
 
-        // Vertical lines
-        for (let x = 0; x <= this.canvas.width; x += this.cellSize) {
-            this.ctx.beginPath();
-            this.ctx.moveTo(x, 0);
-            this.ctx.lineTo(x, this.canvas.height);
-            this.ctx.stroke();
+        for (let i = 0; i <= this.canvas.width; i += this.cellSize) {
+            this.ctx.moveTo(i, 0);
+            this.ctx.lineTo(i, this.canvas.height);
         }
-
-        // Horizontal lines
-        for (let y = 0; y <= this.canvas.height; y += this.cellSize) {
-            this.ctx.beginPath();
-            this.ctx.moveTo(0, y);
-            this.ctx.lineTo(this.canvas.width, y);
-            this.ctx.stroke();
+        for (let i = 0; i <= this.canvas.height; i += this.cellSize) {
+            this.ctx.moveTo(0, i);
+            this.ctx.lineTo(this.canvas.width, i);
         }
+        this.ctx.stroke();
     }
 
     drawSnake(snake) {
@@ -136,58 +131,51 @@ class GameRenderer {
 
     drawFood(food) {
         const theme = this.themes[this.currentTheme];
+        const x = food.x * this.cellSize;
+        const y = food.y * this.cellSize;
+
         if (food.special) {
             this.drawCell(food, '#FFD700');
-            const x = food.x * this.cellSize;
-            const y = food.y * this.cellSize;
             this.ctx.strokeStyle = '#FFA500';
-            this.ctx.lineWidth = 2;
-            this.ctx.strokeRect(x + 2, y + 2, this.cellSize - 4, this.cellSize - 4);
         } else {
             this.drawCell(food, theme.food);
-            const x = food.x * this.cellSize;
-            const y = food.y * this.cellSize;
-            const borderColor = this.darken(theme.food);
-            this.ctx.strokeStyle = borderColor;
-            this.ctx.lineWidth = 2;
-            this.ctx.strokeRect(x + 2, y + 2, this.cellSize - 4, this.cellSize - 4);
+            this.ctx.strokeStyle = { '#ff0000': '#cc0000', '#00ff00': '#00cc00', '#ff00ff': '#cc00cc' }[theme.food] || '#666666';
         }
-    }
 
-    darken(color) {
-        const colors = { '#ff0000': '#cc0000', '#00ff00': '#00cc00', '#ff00ff': '#cc00cc' };
-        return colors[color] || '#666666';
+        this.ctx.lineWidth = 2;
+        this.ctx.strokeRect(x + 2, y + 2, this.cellSize - 4, this.cellSize - 4);
     }
 
     drawObstacles(obstacles) {
         const theme = this.themes[this.currentTheme];
-        for (let obstacle of obstacles) {
-            const x = obstacle.x * this.cellSize;
-            const y = obstacle.y * this.cellSize;
-            this.ctx.fillStyle = theme.obstacle;
-            this.ctx.fillRect(x + 1, y + 1, this.cellSize - 2, this.cellSize - 2);
-            this.ctx.strokeStyle = '#666666';
-            this.ctx.lineWidth = 1;
-            this.ctx.strokeRect(x + 1, y + 1, this.cellSize - 2, this.cellSize - 2);
+        this.ctx.fillStyle = theme.obstacle;
+        this.ctx.strokeStyle = '#666666';
+        this.ctx.lineWidth = 1;
+        const padding = 1;
+        const size = this.cellSize - 2;
+
+        for (let obs of obstacles) {
+            const x = obs.x * this.cellSize;
+            const y = obs.y * this.cellSize;
+            this.ctx.fillRect(x + padding, y + padding, size, size);
+            this.ctx.strokeRect(x + padding, y + padding, size, size);
         }
     }
 
     drawCell(pos, color) {
-        const x = pos.x * this.cellSize;
-        const y = pos.y * this.cellSize;
         this.ctx.fillStyle = color;
-        this.ctx.fillRect(x + 1, y + 1, this.cellSize - 2, this.cellSize - 2);
+        const x = pos.x * this.cellSize + 1;
+        const y = pos.y * this.cellSize + 1;
+        this.ctx.fillRect(x, y, this.cellSize - 2, this.cellSize - 2);
     }
 
     drawCellWithGlow(pos, color) {
-        const x = pos.x * this.cellSize;
-        const y = pos.y * this.cellSize;
-
-        // Draw glow
         this.ctx.shadowColor = color;
         this.ctx.shadowBlur = 10;
         this.ctx.fillStyle = color;
-        this.ctx.fillRect(x + 1, y + 1, this.cellSize - 2, this.cellSize - 2);
+        const x = pos.x * this.cellSize + 1;
+        const y = pos.y * this.cellSize + 1;
+        this.ctx.fillRect(x, y, this.cellSize - 2, this.cellSize - 2);
         this.ctx.shadowBlur = 0;
     }
 
