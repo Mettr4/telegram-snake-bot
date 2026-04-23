@@ -14,7 +14,10 @@ let inputBuffer = [];
 
 // UI refs
 let scoreDisplay, finalScoreDisplay, gameOverModal, startBtn, pauseBtn, restartBtn;
-let settingsBtn, settingsPanel;
+let settingsBtn, settingsPanel, bestScoreDisplay, levelDisplay, lengthDisplay;
+
+// Stats
+let bestScore = parseInt(localStorage.getItem('bestScore') || '0');
 
 const KEY_MAP = {
     'ArrowUp': Direction.UP, 'w': Direction.UP, 'W': Direction.UP,
@@ -158,6 +161,8 @@ function updateLogic() {
         if (game.collisionOccurred) renderer.shake(5);
 
         scoreDisplay.textContent = game.score;
+        levelDisplay.textContent = Math.floor(game.score / 100) + 1;
+        lengthDisplay.textContent = game.snake.length;
         if (game.gameOver) endGame();
     }
     lastLogicUpdate = Date.now();
@@ -215,6 +220,13 @@ function endGame() {
     startBtn.disabled = false;
     pauseBtn.disabled = true;
     if (joystickElement) joystickElement.classList.remove('active');
+
+    if (game.score > bestScore) {
+        bestScore = game.score;
+        localStorage.setItem('bestScore', bestScore);
+        bestScoreDisplay.textContent = bestScore;
+    }
+
     finalScoreDisplay.textContent = game.score;
     gameOverModal.style.display = 'flex';
 }
@@ -260,6 +272,11 @@ function initApp() {
         restartBtn = document.getElementById('restartBtn');
         settingsBtn = document.getElementById('settingsBtn');
         settingsPanel = document.getElementById('settingsPanel');
+        bestScoreDisplay = document.getElementById('bestScore');
+        levelDisplay = document.getElementById('level');
+        lengthDisplay = document.getElementById('length');
+
+        bestScoreDisplay.textContent = bestScore;
 
         initJoystick();
 

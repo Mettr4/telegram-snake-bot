@@ -15,7 +15,10 @@
 
     <div class="container">
         <div class="header">
-            <div class="score-display">Score: <span id="score">0</span></div>
+            <div class="score-info">
+                <div class="score-label">SCORE</div>
+                <div class="score-display" id="score">0</div>
+            </div>
             <button class="settings-btn" id="settingsBtn">⚙️</button>
         </div>
 
@@ -30,9 +33,29 @@
         </div>
 
         <div class="difficulty-selector">
-            <button class="diff-btn" data-difficulty="easy">Easy</button>
-            <button class="diff-btn active" data-difficulty="normal">Normal</button>
-            <button class="diff-btn" data-difficulty="hard">Hard</button>
+            <div class="selector-label">DIFFICULTY</div>
+            <div class="selector-buttons">
+                <button class="diff-btn" data-difficulty="easy">Easy</button>
+                <button class="diff-btn active" data-difficulty="normal">Normal</button>
+                <button class="diff-btn" data-difficulty="hard">Hard</button>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-label">Best</div>
+                <div class="stat-value" id="bestScore">0</div>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <div class="stat-label">Level</div>
+                <div class="stat-value" id="level">1</div>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <div class="stat-label">Length</div>
+                <div class="stat-value" id="length">1</div>
+            </div>
         </div>
 
         <div id="settingsPanel" class="settings-modal" style="display: none;">
@@ -62,8 +85,12 @@
 
         <div id="gameOver" class="game-over" style="display: none;">
             <div class="game-over-content">
+                <div class="game-over-emoji">💀</div>
                 <h2>Game Over</h2>
-                <p class="final-score">Score: <span id="finalScore">0</span></p>
+                <div class="final-score-display">
+                    <div class="final-score-label">Final Score</div>
+                    <div class="final-score-value" id="finalScore">0</div>
+                </div>
                 <button class="btn btn-play" onclick="location.reload()">Play Again</button>
             </div>
         </div>
