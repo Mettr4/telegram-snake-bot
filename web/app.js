@@ -18,18 +18,21 @@ let inputBuffer = [];
 const MAX_BUFFER_SIZE = 2;
 let touchThreshold = parseInt(localStorage.getItem('touchSensitivity') || '30');
 
-// UI Elements
-const scoreDisplay = document.getElementById('score');
-const finalScoreDisplay = document.getElementById('finalScore');
-const gameOverModal = document.getElementById('gameOver');
-const startBtn = document.getElementById('startBtn');
-const pauseBtn = document.getElementById('pauseBtn');
-const restartBtn = document.getElementById('restartBtn');
+// UI Elements - initialize after DOM is ready
+let scoreDisplay, finalScoreDisplay, gameOverModal, startBtn, pauseBtn, restartBtn;
 
-// Event listeners
-startBtn.addEventListener('click', startGame);
-pauseBtn.addEventListener('click', togglePause);
-restartBtn.addEventListener('click', restartGame);
+function initUI() {
+    scoreDisplay = document.getElementById('score');
+    finalScoreDisplay = document.getElementById('finalScore');
+    gameOverModal = document.getElementById('gameOver');
+    startBtn = document.getElementById('startBtn');
+    pauseBtn = document.getElementById('pauseBtn');
+    restartBtn = document.getElementById('restartBtn');
+
+    if (startBtn) startBtn.addEventListener('click', startGame);
+    if (pauseBtn) pauseBtn.addEventListener('click', togglePause);
+    if (restartBtn) restartBtn.addEventListener('click', restartGame);
+}
 
 // Keyboard controls with input buffering
 document.addEventListener('keydown', (e) => {
@@ -311,14 +314,24 @@ function initThemeSelector() {
     });
 }
 
-// Initial render
-renderer.render(game.getState());
-if (document.querySelectorAll('[data-sensitivity]').length > 0) {
-    initSensitivitySelector();
+// Initialize when DOM is ready
+function initGame() {
+    initUI();
+    renderer.render(game.getState());
+    if (document.querySelectorAll('[data-sensitivity]').length > 0) {
+        initSensitivitySelector();
+    }
+    if (document.querySelectorAll('[data-difficulty]').length > 0) {
+        initDifficultySelector();
+    }
+    if (document.querySelectorAll('[data-theme]').length > 0) {
+        initThemeSelector();
+    }
 }
-if (document.querySelectorAll('[data-difficulty]').length > 0) {
-    initDifficultySelector();
-}
-if (document.querySelectorAll('[data-theme]').length > 0) {
-    initThemeSelector();
+
+// Start initialization when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initGame);
+} else {
+    initGame();
 }
