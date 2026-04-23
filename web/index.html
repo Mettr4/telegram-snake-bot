@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🐍 Snake Game</title>
+    <title>Snake Game</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -14,48 +14,58 @@
     </div>
 
     <div class="container">
-        <h1>🐍 Snake Game</h1>
-        <div class="game-wrapper">
+        <div class="header">
+            <div class="score-display">Score: <span id="score">0</span></div>
+            <button class="settings-btn" id="settingsBtn">⚙️</button>
+        </div>
+
+        <div class="game-area">
             <canvas id="gameCanvas" width="320" height="320"></canvas>
-            <div class="info">
-                <div class="score">Score: <span id="score">0</span></div>
-                <div class="controls-info">
-                    <p>⬆️⬇️⬅️➡️ | Свайп | 🖱️ Захват</p>
+        </div>
+
+        <div class="controls">
+            <button id="startBtn" class="btn btn-play">▶️ PLAY</button>
+            <button id="pauseBtn" class="btn btn-pause" disabled>⏸️ PAUSE</button>
+            <button id="restartBtn" class="btn btn-restart">🔄 NEW</button>
+        </div>
+
+        <div class="difficulty-selector">
+            <button class="diff-btn" data-difficulty="easy">Easy</button>
+            <button class="diff-btn active" data-difficulty="normal">Normal</button>
+            <button class="diff-btn" data-difficulty="hard">Hard</button>
+        </div>
+
+        <div id="settingsPanel" class="settings-modal" style="display: none;">
+            <div class="settings-content">
+                <div class="settings-close" onclick="toggleSettings()">✕</div>
+
+                <div class="setting-group">
+                    <h4>Touch Sensitivity</h4>
+                    <div class="setting-buttons">
+                        <button class="setting-btn" data-sensitivity="20">High</button>
+                        <button class="setting-btn active" data-sensitivity="30">Normal</button>
+                        <button class="setting-btn" data-sensitivity="50">Low</button>
+                    </div>
+                </div>
+
+                <div class="setting-group">
+                    <h4>Theme</h4>
+                    <div class="setting-buttons">
+                        <button class="setting-btn" data-theme="classic">Classic</button>
+                        <button class="setting-btn" data-theme="neon">Neon</button>
+                        <button class="setting-btn" data-theme="retro">Retro</button>
+                        <button class="setting-btn" data-theme="dark">Dark</button>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="buttons">
-            <button id="startBtn" class="btn btn-primary">▶️ Начать игру</button>
-            <button id="pauseBtn" class="btn btn-secondary" disabled>⏸️ Пауза</button>
-            <button id="restartBtn" class="btn btn-warning">🔄 Новая игра</button>
-        </div>
-        <div class="difficulty-panel">
-            <h3>⚡ Уровень сложности</h3>
-            <div class="difficulty-buttons">
-                <button class="difficulty-btn" data-difficulty="easy">😌 Легко</button>
-                <button class="difficulty-btn active" data-difficulty="normal">🎮 Нормально</button>
-                <button class="difficulty-btn" data-difficulty="hard">💀 Сложно</button>
-            </div>
-        </div>
-        <div class="settings-panel">
-            <h3>⚙️ Чувствительность сенсора</h3>
-            <div class="sensitivity-buttons">
-                <button class="sensitivity-btn" data-sensitivity="20">Высокая (20px)</button>
-                <button class="sensitivity-btn active" data-sensitivity="30">Нормально (30px)</button>
-                <button class="sensitivity-btn" data-sensitivity="50">Низкая (50px)</button>
-            </div>
-            <h3 style="margin-top: 15px;">🎨 Тема</h3>
-            <div class="theme-buttons">
-                <button class="theme-btn" data-theme="classic">Классик</button>
-                <button class="theme-btn" data-theme="neon">Неон</button>
-                <button class="theme-btn" data-theme="retro">Ретро</button>
-                <button class="theme-btn" data-theme="dark">Тёмный</button>
-            </div>
-        </div>
+
         <div id="gameOver" class="game-over" style="display: none;">
-            <h2>💀 Игра окончена!</h2>
-            <p>Ваш счёт: <span id="finalScore">0</span></p>
-            <button class="btn btn-primary" onclick="location.reload()">🔄 Играть снова</button>
+            <div class="game-over-content">
+                <h2>Game Over</h2>
+                <p class="final-score">Score: <span id="finalScore">0</span></p>
+                <button class="btn btn-play" onclick="location.reload()">Play Again</button>
+            </div>
         </div>
     </div>
 

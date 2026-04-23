@@ -14,7 +14,7 @@ let inputBuffer = [];
 
 // UI refs
 let scoreDisplay, finalScoreDisplay, gameOverModal, startBtn, pauseBtn, restartBtn;
-let difficultyPanel;
+let settingsBtn, settingsPanel;
 
 const KEY_MAP = {
     'ArrowUp': Direction.UP, 'w': Direction.UP, 'W': Direction.UP,
@@ -153,7 +153,6 @@ function startGame() {
     startBtn.disabled = true;
     pauseBtn.disabled = false;
     gameOverModal.style.display = 'none';
-    if (difficultyPanel) difficultyPanel.style.display = 'none';
     if (joystickElement) joystickElement.classList.add('active');
     inputBuffer = [];
 
@@ -175,9 +174,8 @@ function restartGame() {
     gamePaused = false;
     startBtn.disabled = false;
     pauseBtn.disabled = true;
-    pauseBtn.textContent = '⏸️ Пауза';
+    pauseBtn.textContent = '⏸️ PAUSE';
     gameOverModal.style.display = 'none';
-    if (difficultyPanel) difficultyPanel.style.display = 'block';
     if (joystickElement) joystickElement.classList.remove('active');
     scoreDisplay.textContent = '0';
     renderer.render(game.getState());
@@ -188,10 +186,14 @@ function endGame() {
     if (gameLoopId) clearTimeout(gameLoopId);
     startBtn.disabled = false;
     pauseBtn.disabled = true;
-    if (difficultyPanel) difficultyPanel.style.display = 'block';
     if (joystickElement) joystickElement.classList.remove('active');
     finalScoreDisplay.textContent = game.score;
-    gameOverModal.style.display = 'block';
+    gameOverModal.style.display = 'flex';
+}
+
+function toggleSettings() {
+    if (gameRunning) return;
+    settingsPanel.style.display = settingsPanel.style.display === 'none' ? 'flex' : 'none';
 }
 
 // Settings
@@ -228,16 +230,22 @@ function initApp() {
         startBtn = document.getElementById('startBtn');
         pauseBtn = document.getElementById('pauseBtn');
         restartBtn = document.getElementById('restartBtn');
-        difficultyPanel = document.querySelector('.difficulty-panel');
+        settingsBtn = document.getElementById('settingsBtn');
+        settingsPanel = document.getElementById('settingsPanel');
 
         initJoystick();
 
         startBtn?.addEventListener('click', startGame);
         pauseBtn?.addEventListener('click', togglePause);
         restartBtn?.addEventListener('click', restartGame);
+        settingsBtn?.addEventListener('click', toggleSettings);
 
         document.querySelectorAll('[data-difficulty]').forEach(btn => {
-            btn.addEventListener('click', () => setDifficulty(btn.getAttribute('data-difficulty')));
+            btn.addEventListener('click', () => {
+                setDifficulty(btn.getAttribute('data-difficulty'));
+                document.querySelectorAll('[data-difficulty]').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
             if (btn.getAttribute('data-difficulty') === currentDifficulty) btn.classList.add('active');
         });
 
@@ -250,7 +258,11 @@ function initApp() {
         });
 
         document.querySelectorAll('[data-theme]').forEach(btn => {
-            btn.addEventListener('click', () => setTheme(btn.getAttribute('data-theme')));
+            btn.addEventListener('click', () => {
+                setTheme(btn.getAttribute('data-theme'));
+                document.querySelectorAll('[data-theme]').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
             if (btn.getAttribute('data-theme') === renderer.currentTheme) btn.classList.add('active');
         });
 
