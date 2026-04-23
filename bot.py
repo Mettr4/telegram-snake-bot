@@ -23,7 +23,7 @@ print(f"DEBUG: WEB_DIR exists = {os.path.exists(WEB_DIR)}")
 if os.path.exists(WEB_DIR):
     print(f"DEBUG: WEB_DIR contents = {os.listdir(WEB_DIR)}")
 
-app = Flask(__name__, static_folder=WEB_DIR, static_url_path='')
+app = Flask(__name__)
 
 # Telegram app
 tg_app = Application.builder().token(TOKEN).build()
