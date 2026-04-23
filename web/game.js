@@ -36,6 +36,7 @@ class SnakeGame {
         this.slowCounter = 0;
         this.foodEaten = false;
         this.collisionOccurred = false;
+        this.lastUpdateTime = 0;
 
         if (this.difficulty === 'hard') {
             this.generateObstacles();
@@ -89,6 +90,7 @@ class SnakeGame {
     update() {
         this.foodEaten = false;
         this.collisionOccurred = false;
+        this.lastUpdateTime = Date.now();
 
         if (this.gameOver || this.slowCounter > 0) {
             if (this.slowCounter > 0) this.slowCounter--;
@@ -139,7 +141,24 @@ class SnakeGame {
             score: this.score,
             gameOver: this.gameOver,
             obstacles: this.obstacles,
-            difficulty: this.difficulty
+            difficulty: this.difficulty,
+            lastUpdateTime: this.lastUpdateTime
         };
+    }
+
+    getInterpolatedSnake(progress) {
+        if (progress >= 1 || this.snake.length === 0) return this.snake;
+
+        const interpolated = [];
+        for (let i = 0; i < this.snake.length; i++) {
+            const current = this.snake[i];
+            const next = i === 0 ? { x: current.x + this.direction.x, y: current.y + this.direction.y } : this.snake[i - 1];
+
+            interpolated.push({
+                x: current.x + (next.x - current.x) * progress,
+                y: current.y + (next.y - current.y) * progress
+            });
+        }
+        return interpolated;
     }
 }

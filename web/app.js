@@ -104,8 +104,10 @@ function handleGamepad() {
     if (dir && inputBuffer.length < 2) inputBuffer.push(dir);
 }
 
-// Game loop
-function gameLoop() {
+// Separate logic update and render
+let lastLogicUpdate = 0;
+
+function updateLogic() {
     if (!gamePaused) {
         handleGamepad();
         if (inputBuffer.length > 0) game.setDirection(inputBuffer.shift());
@@ -120,8 +122,17 @@ function gameLoop() {
         scoreDisplay.textContent = game.score;
         if (game.gameOver) endGame();
     }
-    renderer.render(game.getState());
-    gameLoopId = setTimeout(gameLoop, game.updateInterval);
+    lastLogicUpdate = Date.now();
+    gameLoopId = setTimeout(updateLogic, game.updateInterval);
+}
+
+function renderFrame() {
+    const state = game.getState();
+    const timeSinceUpdate = Math.max(0, Date.now() - (state.lastUpdateTime || Date.now()));
+    const progress = Math.min(1, timeSinceUpdate / game.updateInterval);
+
+    renderer.renderInterpolated(state, progress);
+    requestAnimationFrame(renderFrame);
 }
 
 // Game functions
@@ -135,8 +146,8 @@ function startGame() {
     if (difficultyPanel) difficultyPanel.style.display = 'none';
     inputBuffer = [];
 
-    gameLoopId = setTimeout(gameLoop, game.updateInterval);
-    renderer.render(game.getState());
+    gameLoopId = setTimeout(updateLogic, game.updateInterval);
+    requestAnimationFrame(renderFrame);
 }
 
 function togglePause() {

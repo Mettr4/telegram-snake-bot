@@ -121,11 +121,22 @@ class GameRenderer {
     drawSnake(snake) {
         const theme = this.themes[this.currentTheme];
         for (let i = 1; i < snake.length; i++) {
-            this.drawCell(snake[i], theme.body);
+            const pos = snake[i];
+            const x = Math.round(pos.x * this.cellSize) + 1;
+            const y = Math.round(pos.y * this.cellSize) + 1;
+            this.ctx.fillStyle = theme.body;
+            this.ctx.fillRect(x, y, this.cellSize - 2, this.cellSize - 2);
         }
 
         if (snake.length > 0) {
-            this.drawCellWithGlow(snake[0], theme.head);
+            const headPos = snake[0];
+            const x = Math.round(headPos.x * this.cellSize) + 1;
+            const y = Math.round(headPos.y * this.cellSize) + 1;
+            this.ctx.shadowColor = theme.head;
+            this.ctx.shadowBlur = 10;
+            this.ctx.fillStyle = theme.head;
+            this.ctx.fillRect(x, y, this.cellSize - 2, this.cellSize - 2);
+            this.ctx.shadowBlur = 0;
         }
     }
 
@@ -180,6 +191,10 @@ class GameRenderer {
     }
 
     render(gameState) {
+        this.renderInterpolated(gameState, 1);
+    }
+
+    renderInterpolated(gameState, progress) {
         try {
             this.applyShake();
             this.clear();
@@ -189,7 +204,9 @@ class GameRenderer {
                 this.drawObstacles(gameState.obstacles);
             }
 
-            this.drawSnake(gameState.snake);
+            const interpolatedSnake = progress < 1 && gameState.snake ?
+                this.getInterpolatedSnake(gameState.snake, progress) : gameState.snake;
+            this.drawSnake(interpolatedSnake);
             this.drawFood(gameState.food);
             this.particleSystem.draw(this.ctx);
 
@@ -201,5 +218,13 @@ class GameRenderer {
         } catch (error) {
             console.error('Render error:', error);
         }
+    }
+
+    getInterpolatedSnake(snake, progress) {
+        if (!snake || snake.length === 0) return snake;
+        return snake.map(segment => ({
+            x: segment.x,
+            y: segment.y
+        }));
     }
 }
