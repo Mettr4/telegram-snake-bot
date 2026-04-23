@@ -1,27 +1,24 @@
-import sys
 import os
-
-print("BOT.PY: Loading...", flush=True)
-
 from flask import Flask
 
-print("BOT.PY: Flask imported", flush=True)
-
 app = Flask(__name__)
+WEB_DIR = os.path.dirname(__file__) + '/web'
 
-print("BOT.PY: App created", flush=True)
-
-@app.route('/test')
-def test():
-    return "TEST OK"
 
 @app.route('/')
 def index():
-    return "HELLO WORLD"
+    try:
+        with open(os.path.join(WEB_DIR, 'index.html'), 'r') as f:
+            return f.read()
+    except:
+        return "index.html not found", 404
 
-print("BOT.PY: Routes registered", flush=True)
 
-if __name__ == '__main__':
-    port = int(os.getenv('PORT', 8080))
-    print(f"BOT.PY: Starting on port {port}", flush=True)
-    app.run(host='0.0.0.0', port=port, debug=False)
+@app.route('/<path:path>')
+def serve(path):
+    try:
+        filepath = os.path.join(WEB_DIR, path)
+        with open(filepath, 'rb') as f:
+            return f.read()
+    except:
+        return "404", 404
