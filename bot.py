@@ -19,3 +19,8 @@ def serve(path):
         with open(filepath, 'rb') as f:
             return f.read()
     return "404", 404
+
+if __name__ == '__main__':
+    port = int(os.getenv('PORT', 5000))
+    print(f'Starting on port {port}')
+    app.run(host='0.0.0.0', port=port, debug=False, threaded=True)
