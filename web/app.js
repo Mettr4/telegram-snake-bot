@@ -37,28 +37,53 @@ document.addEventListener('keydown', (e) => {
 let joystickElement, joystickStick;
 let joystickActive = false;
 let joystickCenterX = 0, joystickCenterY = 0;
-let joystickRadius = 40;
+let joystickRadius = 50;
 
 function initJoystick() {
     joystickElement = document.getElementById('joystick');
     joystickStick = document.querySelector('.joystick-stick');
 
+    if (!joystickElement) {
+        console.error('Joystick element not found');
+        return;
+    }
+
+    // Touch events
     joystickElement.addEventListener('touchstart', (e) => {
+        if (!gameRunning) return;
         joystickActive = true;
         updateJoystick(e.touches[0]);
     }, { passive: true });
 
-    joystickElement.addEventListener('touchmove', (e) => {
+    document.addEventListener('touchmove', (e) => {
         if (joystickActive && gameRunning) updateJoystick(e.touches[0]);
     }, { passive: true });
 
-    joystickElement.addEventListener('touchend', () => {
+    document.addEventListener('touchend', () => {
+        joystickActive = false;
+        resetJoystick();
+    });
+
+    // Mouse events for web version
+    joystickElement.addEventListener('mousedown', (e) => {
+        if (!gameRunning) return;
+        joystickActive = true;
+        updateJoystick(e);
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (joystickActive && gameRunning) updateJoystick(e);
+    });
+
+    document.addEventListener('mouseup', () => {
         joystickActive = false;
         resetJoystick();
     });
 }
 
 function updateJoystick(touch) {
+    if (!joystickElement) return;
+
     const rect = joystickElement.getBoundingClientRect();
     joystickCenterX = rect.left + rect.width / 2;
     joystickCenterY = rect.top + rect.height / 2;
@@ -66,7 +91,7 @@ function updateJoystick(touch) {
     const dx = touch.clientX - joystickCenterX;
     const dy = touch.clientY - joystickCenterY;
     const distance = Math.sqrt(dx * dx + dy * dy);
-    const maxDistance = joystickRadius;
+    const maxDistance = joystickRadius + 15;
 
     let stickX = dx, stickY = dy;
     if (distance > maxDistance) {
@@ -74,9 +99,12 @@ function updateJoystick(touch) {
         stickY = (dy / distance) * maxDistance;
     }
 
-    joystickStick.style.transform = `translate(calc(-50% + ${stickX}px), calc(-50% + ${stickY}px))`;
+    if (joystickStick) {
+        joystickStick.style.transform = `translate(calc(-50% + ${stickX}px), calc(-50% + ${stickY}px))`;
+    }
 
-    if (Math.abs(stickX) > 10 || Math.abs(stickY) > 10) {
+    // Higher sensitivity - reduced threshold from 10 to 3
+    if (Math.abs(stickX) > 3 || Math.abs(stickY) > 3) {
         let dir = null;
         if (Math.abs(stickX) > Math.abs(stickY)) {
             dir = stickX > 0 ? Direction.RIGHT : Direction.LEFT;
