@@ -33,11 +33,15 @@ tg_app = Application.builder().token(TOKEN).build()
 
 @app.route('/')
 def index():
+    print(f"DEBUG: Serving index.html from {WEB_DIR}")
     return send_from_directory(WEB_DIR, 'index.html')
 
 
 @app.route('/<path:filename>')
 def serve_static(filename):
+    print(f"DEBUG: Serving {filename} from {WEB_DIR}")
+    filepath = os.path.join(WEB_DIR, filename)
+    print(f"DEBUG: Full path = {filepath}, exists = {os.path.exists(filepath)}")
     return send_from_directory(WEB_DIR, filename)
 
 
