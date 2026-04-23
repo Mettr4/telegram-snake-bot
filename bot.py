@@ -18,6 +18,12 @@ print(f"[BOT] WEB_DIR: {WEB_DIR}", file=sys.stderr)
 print(f"[BOT] WEB_DIR exists: {os.path.exists(WEB_DIR)}", file=sys.stderr)
 
 
+@app.before_request
+def log_request():
+    from flask import request
+    print(f"[HTTP] {request.method} {request.path}", file=sys.stderr)
+
+
 @app.route('/', methods=['GET'])
 def index():
     filepath = os.path.join(WEB_DIR, 'index.html')
