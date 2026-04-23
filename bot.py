@@ -31,16 +31,26 @@ tg_app = Application.builder().token(TOKEN).build()
 
 @app.route('/')
 def index():
-    print(f"DEBUG: Serving index.html from {WEB_DIR}")
-    return send_from_directory(WEB_DIR, 'index.html')
+    filepath = os.path.join(WEB_DIR, 'index.html')
+    print(f"DEBUG: Route / requested, serving {filepath}")
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            return f.read()
+    except Exception as e:
+        print(f"ERROR: Failed to read {filepath}: {e}")
+        return f"Error reading file: {e}", 500
 
 
 @app.route('/<path:filename>')
 def serve_static(filename):
-    print(f"DEBUG: Serving {filename} from {WEB_DIR}")
     filepath = os.path.join(WEB_DIR, filename)
-    print(f"DEBUG: Full path = {filepath}, exists = {os.path.exists(filepath)}")
-    return send_from_directory(WEB_DIR, filename)
+    print(f"DEBUG: Route /{filename} requested, serving {filepath}")
+    try:
+        with open(filepath, 'rb') as f:
+            return f.read()
+    except Exception as e:
+        print(f"ERROR: Failed to read {filepath}: {e}")
+        return f"Error reading file: {e}", 404
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
