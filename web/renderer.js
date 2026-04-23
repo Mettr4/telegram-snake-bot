@@ -155,12 +155,8 @@ class GameRenderer {
     }
 
     darken(color) {
-        const num = parseInt(color.replace('#', ''), 16);
-        const amt = 30;
-        const usign = amt > 0 ? 1 : -1;
-        return '#' + (0x1000000 + (Math.floor(num / 0x10000) - usign * amt) * 0x10000 +
-            (Math.floor((num / 0x100) % 0x100) - usign * amt) * 0x100 +
-            (num % 0x100 - usign * amt)).toString(16).slice(1);
+        const colors = { '#ff0000': '#cc0000', '#00ff00': '#00cc00', '#ff00ff': '#cc00cc' };
+        return colors[color] || '#666666';
     }
 
     drawObstacles(obstacles) {
@@ -196,18 +192,26 @@ class GameRenderer {
     }
 
     render(gameState) {
-        this.applyShake();
-        this.clear();
-        this.particleSystem.update();
+        try {
+            this.applyShake();
+            this.clear();
+            this.particleSystem.update();
 
-        if (gameState.obstacles && gameState.obstacles.length > 0) {
-            this.drawObstacles(gameState.obstacles);
+            if (gameState.obstacles && gameState.obstacles.length > 0) {
+                this.drawObstacles(gameState.obstacles);
+            }
+
+            this.drawSnake(gameState.snake);
+            this.drawFood(gameState.food);
+            this.particleSystem.draw(this.ctx);
+
+            if (this.ctx.resetTransform) {
+                this.ctx.resetTransform();
+            } else {
+                this.ctx.translate(0, 0);
+            }
+        } catch (error) {
+            console.error('Render error:', error);
         }
-
-        this.drawSnake(gameState.snake);
-        this.drawFood(gameState.food);
-        this.particleSystem.draw(this.ctx);
-
-        this.ctx.translate(0, 0);
     }
 }
