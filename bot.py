@@ -15,9 +15,17 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Flask app
-app = Flask(__name__)
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 WEB_DIR = os.path.join(SCRIPT_DIR, 'web')
+
+# Debug: print paths
+print(f"DEBUG: SCRIPT_DIR = {SCRIPT_DIR}")
+print(f"DEBUG: WEB_DIR = {WEB_DIR}")
+print(f"DEBUG: WEB_DIR exists = {os.path.exists(WEB_DIR)}")
+if os.path.exists(WEB_DIR):
+    print(f"DEBUG: WEB_DIR contents = {os.listdir(WEB_DIR)}")
+
+app = Flask(__name__, static_folder=WEB_DIR, static_url_path='')
 
 # Telegram app
 tg_app = Application.builder().token(TOKEN).build()
@@ -28,9 +36,9 @@ def index():
     return send_from_directory(WEB_DIR, 'index.html')
 
 
-@app.route('/<path:path>')
-def serve_static(path):
-    return send_from_directory(WEB_DIR, path)
+@app.route('/<path:filename>')
+def serve_static(filename):
+    return send_from_directory(WEB_DIR, filename)
 
 
 @app.route('/telegram/webhook', methods=['POST'])
