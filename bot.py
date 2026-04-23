@@ -20,20 +20,32 @@ print(f"[BOT] WEB_DIR exists: {os.path.exists(WEB_DIR)}", file=sys.stderr)
 
 @app.route('/', methods=['GET'])
 def index():
+    filepath = os.path.join(WEB_DIR, 'index.html')
+    print(f"[ROUTE] GET / -> {filepath}", file=sys.stderr)
+    print(f"[ROUTE] File exists: {os.path.exists(filepath)}", file=sys.stderr)
     try:
-        with open(os.path.join(WEB_DIR, 'index.html'), 'r') as f:
-            return f.read()
+        with open(filepath, 'r', encoding='utf-8') as f:
+            content = f.read()
+            print(f"[ROUTE] SUCCESS: Serving {len(content)} bytes", file=sys.stderr)
+            return content
     except Exception as e:
+        print(f"[ROUTE] ERROR: {e}", file=sys.stderr)
         return f"Error: {e}", 500
 
 
 @app.route('/<filename>', methods=['GET'])
 def serve_file(filename):
+    filepath = os.path.join(WEB_DIR, filename)
+    print(f"[ROUTE] GET /{filename} -> {filepath}", file=sys.stderr)
+    print(f"[ROUTE] File exists: {os.path.exists(filepath)}", file=sys.stderr)
     try:
-        filepath = os.path.join(WEB_DIR, filename)
         with open(filepath, 'rb') as f:
-            return f.read()
+            content = f.read()
+            print(f"[ROUTE] SUCCESS: Serving {len(content)} bytes", file=sys.stderr)
+            return content
     except FileNotFoundError:
+        print(f"[ROUTE] ERROR: File not found", file=sys.stderr)
         return "404 Not Found", 404
     except Exception as e:
+        print(f"[ROUTE] ERROR: {e}", file=sys.stderr)
         return f"Error: {e}", 500
