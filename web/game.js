@@ -12,17 +12,11 @@ class Direction {
 class SnakeGame {
     static GRID_WIDTH = 10;
     static GRID_HEIGHT = 10;
-    static DIFFICULTY = {
-        easy: 600,
-        normal: 500,
-        hard: 350
-    };
+    static DIFFICULTY = { easy: 600, normal: 500, hard: 350 };
 
     constructor(difficulty = 'normal') {
         this.difficulty = difficulty;
         this.updateInterval = SnakeGame.DIFFICULTY[difficulty];
-        this.foodEaten = false;
-        this.collisionOccurred = false;
         this.reset();
     }
 
@@ -46,23 +40,18 @@ class SnakeGame {
 
     generateObstacles() {
         this.obstacles = [];
-        const obstacleCount = 8;
-        for (let i = 0; i < obstacleCount; i++) {
-            let newObstacle;
+        for (let i = 0; i < 8; i++) {
+            let newObs;
             do {
-                newObstacle = {
+                newObs = {
                     x: Math.floor(Math.random() * SnakeGame.GRID_WIDTH),
                     y: Math.floor(Math.random() * SnakeGame.GRID_HEIGHT)
                 };
-            } while (this.isSnakePosition(newObstacle) ||
-                     (newObstacle.x === this.food.x && newObstacle.y === this.food.y) ||
-                     this.isObstaclePosition(newObstacle));
-            this.obstacles.push(newObstacle);
+            } while (this.isSnakePosition(newObs) ||
+                     (newObs.x === this.food.x && newObs.y === this.food.y) ||
+                     this.isObstaclePosition(newObs));
+            this.obstacles.push(newObs);
         }
-    }
-
-    isObstaclePosition(pos) {
-        return this.obstacles.some(obs => obs.x === pos.x && obs.y === pos.y);
     }
 
     spawnFood() {
@@ -78,13 +67,24 @@ class SnakeGame {
     }
 
     isSnakePosition(pos) {
-        return this.snake.some(segment => segment.x === pos.x && segment.y === pos.y);
+        return this.snake.some(seg => seg.x === pos.x && seg.y === pos.y);
+    }
+
+    isObstaclePosition(pos) {
+        return this.obstacles.some(obs => obs.x === pos.x && obs.y === pos.y);
     }
 
     setDirection(direction) {
         if (!Direction.isOpposite(direction, this.direction)) {
             this.nextDirection = direction;
         }
+    }
+
+    checkCollision(pos) {
+        return pos.x < 0 || pos.x >= SnakeGame.GRID_WIDTH ||
+               pos.y < 0 || pos.y >= SnakeGame.GRID_HEIGHT ||
+               this.isSnakePosition(pos) ||
+               this.isObstaclePosition(pos);
     }
 
     update() {
@@ -118,20 +118,14 @@ class SnakeGame {
 
             const speedLevel = Math.floor(this.score / 100);
             if (speedLevel > 0 && this.difficulty !== 'hard') {
-                this.updateInterval = Math.max(200, SnakeGame.DIFFICULTY[this.difficulty] - (speedLevel * 20));
+                this.updateInterval = Math.max(200,
+                    SnakeGame.DIFFICULTY[this.difficulty] - (speedLevel * 20));
             }
 
             this.food = this.spawnFood();
         } else {
             this.snake.pop();
         }
-    }
-
-    checkCollision(pos) {
-        return pos.x < 0 || pos.x >= SnakeGame.GRID_WIDTH ||
-               pos.y < 0 || pos.y >= SnakeGame.GRID_HEIGHT ||
-               this.isSnakePosition(pos) ||
-               this.isObstaclePosition(pos);
     }
 
     getState() {
@@ -144,21 +138,5 @@ class SnakeGame {
             difficulty: this.difficulty,
             lastUpdateTime: this.lastUpdateTime
         };
-    }
-
-    getInterpolatedSnake(progress) {
-        if (progress >= 1 || this.snake.length === 0) return this.snake;
-
-        const interpolated = [];
-        for (let i = 0; i < this.snake.length; i++) {
-            const current = this.snake[i];
-            const next = i === 0 ? { x: current.x + this.direction.x, y: current.y + this.direction.y } : this.snake[i - 1];
-
-            interpolated.push({
-                x: current.x + (next.x - current.x) * progress,
-                y: current.y + (next.y - current.y) * progress
-            });
-        }
-        return interpolated;
     }
 }
