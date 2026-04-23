@@ -5,9 +5,8 @@ if (tg) {
     tg.ready();
 }
 
-// Game variables
-let game = new SnakeGame();
-const renderer = new GameRenderer('gameCanvas', 32);
+// Game variables - defer initialization
+let game, renderer;
 let gameRunning = false;
 let gamePaused = false;
 let gameLoopId = null;
@@ -18,7 +17,7 @@ let inputBuffer = [];
 const MAX_BUFFER_SIZE = 2;
 let touchThreshold = parseInt(localStorage.getItem('touchSensitivity') || '30');
 
-// UI Elements - initialize after DOM is ready
+// UI Elements
 let scoreDisplay, finalScoreDisplay, gameOverModal, startBtn, pauseBtn, restartBtn;
 
 function initUI() {
@@ -29,9 +28,16 @@ function initUI() {
     pauseBtn = document.getElementById('pauseBtn');
     restartBtn = document.getElementById('restartBtn');
 
+    console.log('UI Init:', { startBtn, pauseBtn, restartBtn });
+
     if (startBtn) startBtn.addEventListener('click', startGame);
     if (pauseBtn) pauseBtn.addEventListener('click', togglePause);
     if (restartBtn) restartBtn.addEventListener('click', restartGame);
+}
+
+function initGame() {
+    game = new SnakeGame();
+    renderer = new GameRenderer('gameCanvas', 32);
 }
 
 // Keyboard controls with input buffering
@@ -314,24 +320,29 @@ function initThemeSelector() {
     });
 }
 
-// Initialize when DOM is ready
-function initGame() {
-    initUI();
-    renderer.render(game.getState());
-    if (document.querySelectorAll('[data-sensitivity]').length > 0) {
-        initSensitivitySelector();
-    }
-    if (document.querySelectorAll('[data-difficulty]').length > 0) {
-        initDifficultySelector();
-    }
-    if (document.querySelectorAll('[data-theme]').length > 0) {
-        initThemeSelector();
+// Start initialization when DOM is ready
+function startApp() {
+    try {
+        initGame();
+        initUI();
+        renderer.render(game.getState());
+
+        if (document.querySelectorAll('[data-sensitivity]').length > 0) {
+            initSensitivitySelector();
+        }
+        if (document.querySelectorAll('[data-difficulty]').length > 0) {
+            initDifficultySelector();
+        }
+        if (document.querySelectorAll('[data-theme]').length > 0) {
+            initThemeSelector();
+        }
+    } catch (error) {
+        console.error('Failed to initialize game:', error);
     }
 }
 
-// Start initialization when DOM is ready
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initGame);
+    document.addEventListener('DOMContentLoaded', startApp);
 } else {
-    initGame();
+    startApp();
 }
