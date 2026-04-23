@@ -33,58 +33,68 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// Drag/Touch input
-let dragStartX = 0, dragStartY = 0, isDragging = false;
+// Joystick
+let joystickElement, joystickStick;
+let joystickActive = false;
+let joystickCenterX = 0, joystickCenterY = 0;
+let joystickRadius = 40;
 
-function handleDrag(e) {
-    if (!gameRunning || !isDragging) return;
+function initJoystick() {
+    joystickElement = document.getElementById('joystick');
+    joystickStick = document.querySelector('.joystick-stick');
 
-    const currentX = e.touches ? e.touches[0].clientX : e.clientX;
-    const currentY = e.touches ? e.touches[0].clientY : e.clientY;
-    const dx = currentX - dragStartX;
-    const dy = currentY - dragStartY;
+    joystickElement.addEventListener('touchstart', (e) => {
+        joystickActive = true;
+        updateJoystick(e.touches[0]);
+    }, { passive: true });
 
-    let dir = null;
-    if (Math.abs(dx) > Math.abs(dy)) {
-        dir = dx > 5 ? Direction.RIGHT : dx < -5 ? Direction.LEFT : null;
-    } else {
-        dir = dy > 5 ? Direction.DOWN : dy < -5 ? Direction.UP : null;
+    joystickElement.addEventListener('touchmove', (e) => {
+        if (joystickActive && gameRunning) updateJoystick(e.touches[0]);
+    }, { passive: true });
+
+    joystickElement.addEventListener('touchend', () => {
+        joystickActive = false;
+        resetJoystick();
+    });
+}
+
+function updateJoystick(touch) {
+    const rect = joystickElement.getBoundingClientRect();
+    joystickCenterX = rect.left + rect.width / 2;
+    joystickCenterY = rect.top + rect.height / 2;
+
+    const dx = touch.clientX - joystickCenterX;
+    const dy = touch.clientY - joystickCenterY;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    const maxDistance = joystickRadius;
+
+    let stickX = dx, stickY = dy;
+    if (distance > maxDistance) {
+        stickX = (dx / distance) * maxDistance;
+        stickY = (dy / distance) * maxDistance;
     }
 
-    if (dir && inputBuffer.length < 2) {
-        inputBuffer.push(dir);
-        dragStartX = currentX;
-        dragStartY = currentY;
+    joystickStick.style.transform = `translate(calc(-50% + ${stickX}px), calc(-50% + ${stickY}px))`;
+
+    if (Math.abs(stickX) > 10 || Math.abs(stickY) > 10) {
+        let dir = null;
+        if (Math.abs(stickX) > Math.abs(stickY)) {
+            dir = stickX > 0 ? Direction.RIGHT : Direction.LEFT;
+        } else {
+            dir = stickY > 0 ? Direction.DOWN : Direction.UP;
+        }
+
+        if (dir && inputBuffer.length < 2) {
+            inputBuffer.push(dir);
+        }
     }
 }
 
-// Mouse drag
-document.addEventListener('mousedown', (e) => {
-    if (!gameRunning) return;
-    isDragging = true;
-    dragStartX = e.clientX;
-    dragStartY = e.clientY;
-});
-
-document.addEventListener('mousemove', handleDrag);
-
-document.addEventListener('mouseup', () => {
-    isDragging = false;
-});
-
-// Touch drag
-document.addEventListener('touchstart', (e) => {
-    if (!gameRunning) return;
-    isDragging = true;
-    dragStartX = e.touches[0].clientX;
-    dragStartY = e.touches[0].clientY;
-});
-
-document.addEventListener('touchmove', handleDrag, { passive: true });
-
-document.addEventListener('touchend', () => {
-    isDragging = false;
-});
+function resetJoystick() {
+    if (joystickStick) {
+        joystickStick.style.transform = 'translate(-50%, -50%)';
+    }
+}
 
 // Gamepad input
 function handleGamepad() {
@@ -144,6 +154,7 @@ function startGame() {
     pauseBtn.disabled = false;
     gameOverModal.style.display = 'none';
     if (difficultyPanel) difficultyPanel.style.display = 'none';
+    if (joystickElement) joystickElement.classList.add('active');
     inputBuffer = [];
 
     gameLoopId = setTimeout(updateLogic, game.updateInterval);
@@ -177,6 +188,7 @@ function endGame() {
     startBtn.disabled = false;
     pauseBtn.disabled = true;
     if (difficultyPanel) difficultyPanel.style.display = 'block';
+    if (joystickElement) joystickElement.classList.remove('active');
     finalScoreDisplay.textContent = game.score;
     gameOverModal.style.display = 'block';
 }
@@ -216,6 +228,8 @@ function initApp() {
         pauseBtn = document.getElementById('pauseBtn');
         restartBtn = document.getElementById('restartBtn');
         difficultyPanel = document.querySelector('.difficulty-panel');
+
+        initJoystick();
 
         startBtn?.addEventListener('click', startGame);
         pauseBtn?.addEventListener('click', togglePause);
