@@ -10,17 +10,17 @@ TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 WEB_APP_URL = os.getenv("WEB_APP_URL", "http://localhost:8080")
 
 # Flask app for serving web game
-flask_app = Flask(__name__)
+app = Flask(__name__)
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 WEB_DIR = os.path.join(SCRIPT_DIR, 'web')
 
 
-@flask_app.route('/')
+@app.route('/')
 def index():
     return send_from_directory(WEB_DIR, 'index.html')
 
 
-@flask_app.route('/<path:path>')
+@app.route('/<path:path>')
 def serve_static(path):
     return send_from_directory(WEB_DIR, path)
 
@@ -42,28 +42,19 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
-def run_flask():
-    flask_app.run(host='0.0.0.0', port=8080, debug=False, use_reloader=False)
-
-
 def run_telegram_bot():
-    app = Application.builder().token(TOKEN).build()
-    app.add_handler(CommandHandler("start", start))
-
+    tg_app = Application.builder().token(TOKEN).build()
+    tg_app.add_handler(CommandHandler("start", start))
     print("🤖 Telegram бот запущен...")
-    app.run_polling()
+    tg_app.run_polling()
 
 
-def main():
-    # Start Flask in background thread
-    flask_thread = threading.Thread(target=run_flask, daemon=True)
-    flask_thread.start()
-
-    print("🌐 Веб-сервер запущен на http://0.0.0.0:8080")
-
-    # Run Telegram bot in main thread
-    run_telegram_bot()
+def start_bot_thread():
+    bot_thread = threading.Thread(target=run_telegram_bot, daemon=True)
+    bot_thread.start()
 
 
 if __name__ == "__main__":
-    main()
+    start_bot_thread()
+    print("🌐 Веб-сервер запущен на http://0.0.0.0:8080")
+    app.run(host='0.0.0.0', port=8080, debug=False, use_reloader=False)
