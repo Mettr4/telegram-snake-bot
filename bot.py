@@ -1,32 +1,34 @@
 import os
-from flask import Flask, send_file
-
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-WEB_DIR = os.path.join(SCRIPT_DIR, 'web')
+from flask import Flask
 
 app = Flask(__name__)
+WEB_DIR = os.path.dirname(os.path.abspath(__file__)) + '/web'
 
 
-@app.route('/', defaults={'path': ''})
+def read_file(filepath):
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            return f.read()
+    except:
+        with open(filepath, 'rb') as f:
+            return f.read()
+
+
+@app.route('/', defaults={'path': 'index.html'})
 @app.route('/<path:path>')
-def catch_all(path):
-    # Если path пуст - это запрос к корню
-    if path == '' or path == '/':
-        filepath = os.path.join(WEB_DIR, 'index.html')
-    else:
-        filepath = os.path.join(WEB_DIR, path)
+def serve(path):
+    filepath = os.path.join(WEB_DIR, path)
 
-    # Проверяем существует ли файл
-    if os.path.exists(filepath):
-        try:
-            return send_file(filepath)
-        except Exception as e:
-            return f"Error sending file: {e}", 500
-
-    # Если это запрос к папке - попробуем загрузить index.html
+    # Если запрашивают папку - отдаем index.html
     if os.path.isdir(filepath):
-        index_path = os.path.join(filepath, 'index.html')
-        if os.path.exists(index_path):
-            return send_file(index_path)
+        filepath = os.path.join(filepath, 'index.html')
 
-    return f"Not found: {filepath}", 404
+    # Если файл существует - отдаем его
+    if os.path.isfile(filepath):
+        try:
+            content = read_file(filepath)
+            return content
+        except Exception as e:
+            return f"Error: {e}", 500
+
+    return "404 Not Found", 404
