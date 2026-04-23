@@ -33,6 +33,8 @@ def serve_file(filename):
 
 
 if __name__ == '__main__':
-    port = int(os.getenv('PORT', 5000))
-    print(f"[BOT] Running on port {port}", file=sys.stderr)
-    app.run(host='0.0.0.0', port=port, debug=False)
+    port = int(os.getenv('PORT', 8080))
+    print(f"[BOT] PORT env: {os.getenv('PORT')}", file=sys.stderr)
+    print(f"[BOT] Running on 0.0.0.0:{port}", file=sys.stderr)
+    sys.stderr.flush()
+    app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)
