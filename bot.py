@@ -43,10 +43,15 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 def run_telegram_bot():
+    import asyncio
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
     tg_app = Application.builder().token(TOKEN).build()
     tg_app.add_handler(CommandHandler("start", start))
     print("🤖 Telegram бот запущен...")
-    tg_app.run_polling()
+
+    loop.run_until_complete(tg_app.run_polling())
 
 
 def start_bot_thread():
